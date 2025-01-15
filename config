@@ -1,0 +1,8 @@
+AcceptedFileTypes [.ogg,.flac] # ogg and flac by default
+MetadataRetentionSec [86400]  # 86400 by default
+StorageDir [local]            # set to [local] for same directory as the script
+SegmentDuration [10]          # duration of each MPEG-DASH segment in seconds
+MPDOutputPath [local]         # set to [local] for same directory as the script
+StreamBaseURL [http://localhost:8080/] # Base URL for streaming
+StreamBandwidth [96000]       # Bandwidth in bits per second
+StreamDuration [3600]         # Total media presentation duration in seconds

@@ -9,8 +9,8 @@ StreamPort = 8000
 m3uDirectory = "../"
 
 [converter]
-# Accepted File Types, comma separated
-AcceptedFileTypes = [ 
+# Accepted File Types for conversion, comma separated
+AcceptedFileTypes = [
 					".ogg",
 					".flac",
 					".wav",
@@ -32,4 +32,37 @@ Bitrate = 86400
 
 [dashboard]
 # Should we display upcoming songs?
-DisplayUpcoming = Yes
+DisplayUpcoming = true
+
+[uploader]
+# Maximum upload size allowed per user key daily, megabytes
+MaxUserUploadSize = 200
+
+# Filetypes allowed for upload, comma separated
+AcceptedUploadFileTypes = [
+					".ogg",
+					".flac",
+					".wav",
+					".aac"
+					]
+
+# Maximum number of seconds of audio allowed per day per user
+MaxUserAirtime = 1200
+
+# Directory of public keys for authorized ssh users
+SSHKeyDir = "/path/to/keys"
+
+# Access Log Directory, where to write access logs and upload diagnostics
+AccessLog = "/path/to/log"
+
+# Inbound Directory, where to monitor for uploads
+InboundDirectory = "/path/to/files/"
+
+# Copy Directory, where to copy files which are allowed. Usually the same as converter/UploadDirectory variable above, but not always
+StorageDirectory = "/path/to/dir/"
+
+# How many upload or time violations before a one-day denial of access?
+StrikesBeforeTimeOut = 3
+
+# How many time-outs before a total ban (removal of ssh key)?
+TimeOutsBeforeBan = 10

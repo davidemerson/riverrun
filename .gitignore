@@ -1,0 +1,6 @@
+*.go
+*.mod
+*.DS_STORE
+*.sum
+*.m3u
+*.exe

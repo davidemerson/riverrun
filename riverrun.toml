@@ -26,6 +26,10 @@ UploadDirectory = "../uploads/"
 # Where the files converted will be stored
 StreamDirectory = "../queue/"
 
+[playlist]
+# How long to keep metadata after play, seconds
+Bitrate = 86400
+
 [dashboard]
-# How long to keep metadata records in database after they've been played, in seconds
-MetadataRetentionSec = 86400
+# Should we display upcoming songs?
+DisplayUpcoming = Yes

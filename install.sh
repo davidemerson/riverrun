@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Define directories (space-separated list instead of array)
-SRC_DIRS="uploader converter streamer"
+SRC_DIRS="converter streamer uploader"
 BUILD_DIR="build"
 INSTALL_DIR="/usr/local/bin"
 
@@ -60,6 +60,7 @@ install_latest_go() {
 
     echo "Fetching the latest Go version..."
     LATEST_GO_VERSION=$(curl -s https://go.dev/VERSION?m=text)
+
     if [ "$LATEST_GO_VERSION" = "$CURRENT_GO_VERSION" ]; then
         echo "The latest Go version ($LATEST_GO_VERSION) is already installed."
         return
@@ -67,13 +68,23 @@ install_latest_go() {
 
     echo "Installing Go $LATEST_GO_VERSION..."
     OS=$(uname | tr '[:upper:]' '[:lower:]')
-    ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
-    GO_TARBALL="${LATEST_GO_VERSION}.${OS}-${ARCH}.tar.gz"
+    ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/' | sed 's/i[3456]86/386/')
 
-    # Download and install Go
-    curl -O "https://go.dev/dl/${GO_TARBALL}"
-    rm -rf /usr/local/go
-    tar -C /usr/local -xzf "$GO_TARBALL"
+    # Ensure the tarball URL is constructed properly
+    GO_TARBALL="${LATEST_GO_VERSION}.${OS}-${ARCH}.tar.gz"
+    DOWNLOAD_URL="https://go.dev/dl/${GO_TARBALL}"
+
+    echo "Downloading $DOWNLOAD_URL..."
+    curl -LO "$DOWNLOAD_URL"
+
+    if [ ! -f "$GO_TARBALL" ]; then
+        echo "Failed to download $GO_TARBALL. Please check the URL or your network connection."
+        exit 1
+    fi
+
+    # Extract and install Go
+    sudo rm -rf /usr/local/go
+    sudo tar -C /usr/local -xzf "$GO_TARBALL"
     rm "$GO_TARBALL"
 
     # Add Go to PATH

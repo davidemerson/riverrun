@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define directories
-SRC_DIRS=("converter" "streamer" "upload")  # Replace with your actual directories
+SRC_DIRS=("converter" "streamer" "uploader")  # Replace with your actual directories
 BUILD_DIR="build"  # Directory to store the compiled executables
 INSTALL_DIR="/usr/local/bin"  # Adjust the install directory as needed
 

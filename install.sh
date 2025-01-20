@@ -59,7 +59,12 @@ install_latest_go() {
     fi
 
     echo "Fetching the latest Go version..."
-    LATEST_GO_VERSION=$(curl -s https://go.dev/VERSION?m=text)
+    LATEST_GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | grep '^go[0-9]\+\.[0-9]\+\.[0-9]\+$')
+
+    if [ -z "$LATEST_GO_VERSION" ]; then
+        echo "Failed to fetch the latest Go version. Please check your network connection."
+        exit 1
+    fi
 
     if [ "$LATEST_GO_VERSION" = "$CURRENT_GO_VERSION" ]; then
         echo "The latest Go version ($LATEST_GO_VERSION) is already installed."

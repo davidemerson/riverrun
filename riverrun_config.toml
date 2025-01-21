@@ -8,6 +8,10 @@ ICECAST_ADMIN_EMAIL = "riverrun@nnix.com"
 ICECAST_MAX_CLIENTS = 100
 ICECAST_MAX_SOURCES = 2
 ICECAST_HOSTNAME = "riverrun.nnix.com"
+ICECAST_STREAM_NAME = "merveilles community playlist"
+ICECAST_STREAM_GENRE = "Various"
+ICECAST_STREAM_DESCRIPTION = "music made by the merveilles community"
+ICECAST_STREAM_URL = "http://riverrun.nnix.com/stream"
 
 # Directory settings
 MUSIC_DIR = "/var/music"

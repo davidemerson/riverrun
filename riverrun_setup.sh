@@ -32,7 +32,7 @@ fi
 source <(grep -v '^#' "$CONFIG_FILE" | sed 's/ = /=/g')
 
 # Validate required variables
-REQUIRED_VARS=("ICECAST_CONF" "SOURCE_PASSWORD_FILE" "RELAY_PASSWORD_FILE" "ADMIN_PASSWORD_FILE" "MUSIC_DIR" "UPLOAD_DIR" "M3U_FILE" "SUBMIT_USER" "SUPPORTED_FORMATS" "BITRATE" "SAMPLE_RATE" "AUDIO_CODEC" "CONVERTER_SCRIPT" "LOG_FILE" "ICECAST_LOCATION" "ICECAST_ADMIN_EMAIL" "ICECAST_MAX_CLIENTS" "ICECAST_MAX_SOURCES" "ICECAST_HOSTNAME")
+REQUIRED_VARS=("ICECAST_CONF" "SOURCE_PASSWORD_FILE" "RELAY_PASSWORD_FILE" "ADMIN_PASSWORD_FILE" "MUSIC_DIR" "UPLOAD_DIR" "M3U_FILE" "SUBMIT_USER" "SUPPORTED_FORMATS" "BITRATE" "SAMPLE_RATE" "AUDIO_CODEC" "CONVERTER_SCRIPT" "LOG_FILE" "ICECAST_LOCATION" "ICECAST_ADMIN_EMAIL" "ICECAST_MAX_CLIENTS" "ICECAST_MAX_SOURCES" "ICECAST_HOSTNAME" "ICECAST_STREAM_NAME" "ICECAST_STREAM_GENRE" "ICECAST_STREAM_DESCRIPTION" "ICECAST_STREAM_URL")
 for var in "${REQUIRED_VARS[@]}"; do
   if [ -z "${!var}" ]; then
     echo "Error: Required variable $var is not defined in the configuration file. Please update $CONFIG_FILE and try again." | tee -a "$LOG_FILE"
@@ -42,7 +42,7 @@ done
 
 # Install necessary packages
 echo "Installing necessary packages..." | tee -a "$LOG_FILE"
-apt update && apt install -y icecast2 ffmpeg | tee -a "$LOG_FILE"
+apt update && apt install -y icecast2 ffmpeg ices2 | tee -a "$LOG_FILE"
 
 # Enable and start Icecast service
 echo "Enabling and starting Icecast service..." | tee -a "$LOG_FILE"
@@ -65,6 +65,62 @@ sed -i "s|<admin-password>.*</admin-password>|<admin-password>$admin_password</a
 sed -i "s|<hostname>.*</hostname>|<hostname>$ICECAST_HOSTNAME</hostname>|g" "$ICECAST_CONF"
 
 systemctl restart icecast2 | tee -a "$LOG_FILE"
+
+# Configure ices2
+ICES_CONF="/etc/ices2/ices2.xml"
+mkdir -p "$(dirname "$ICES_CONF")"
+echo "Creating ices2 configuration..." | tee -a "$LOG_FILE"
+cat << EOF > "$ICES_CONF"
+<ices>
+  <background>1</background>
+  <logpath>/var/log/ices</logpath>
+  <logfile>ices.log</logfile>
+  <logsize>10000</logsize>
+  <consolelog>1</consolelog>
+
+  <stream>
+    <metadata>
+      <name>$ICECAST_STREAM_NAME</name>
+      <genre>$ICECAST_STREAM_GENRE</genre>
+      <description>$ICECAST_STREAM_DESCRIPTION</description>
+      <url>$ICECAST_STREAM_URL</url>
+    </metadata>
+
+    <input>
+      <param>$MUSIC_DIR</param>
+      <type>basic</type>
+    </input>
+
+    <instance>
+      <hostname>localhost</hostname>
+      <port>8000</port>
+      <password>$source_password</password>
+      <mount>/stream</mount>
+      <stream_once>0</stream_once>
+    </instance>
+  </stream>
+</ices>
+EOF
+
+# Create systemd service for ices2
+echo "Creating systemd service for ices2..." | tee -a "$LOG_FILE"
+cat << EOF > /etc/systemd/system/ices2.service
+[Unit]
+Description=ICES2 Source Client for Icecast
+After=network.target icecast2.service
+
+[Service]
+ExecStart=/usr/bin/ices2 -c $ICES_CONF
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd and start ices2 service
+systemctl daemon-reload
+systemctl enable ices2
+systemctl start ices2
 
 # Create directories
 echo "Creating directories..." | tee -a "$LOG_FILE"

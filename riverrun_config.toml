@@ -1,0 +1,21 @@
+# Icecast configuration
+ICECAST_CONF = "/etc/icecast2/icecast.xml"
+SOURCE_PASSWORD_FILE = "/etc/secrets/source_password"
+RELAY_PASSWORD_FILE = "/etc/secrets/relay_password"
+ADMIN_PASSWORD_FILE = "/etc/secrets/admin_password"
+
+# Directory settings
+MUSIC_DIR = "/var/music"
+UPLOAD_DIR = "/home/submit/upload"
+
+# Submit user settings
+SUBMIT_USER = "submit"
+
+# Supported formats and conversion settings
+SUPPORTED_FORMATS = ".mp3 .flac .aac .wav"
+BITRATE = "256k"
+SAMPLE_RATE = "44100"
+AUDIO_CODEC = "libvorbis"
+
+# Converter script location
+CONVERTER_SCRIPT = "/usr/local/bin/riverrun_converter.sh"

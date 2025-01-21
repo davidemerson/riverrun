@@ -42,15 +42,17 @@ systemctl restart icecast2
 echo "Creating directories..."
 mkdir -p "$MUSIC_DIR"
 mkdir -p "$UPLOAD_DIR"
-chown -R "$SUBMIT_USER:$SUBMIT_USER" "$UPLOAD_DIR"
-chmod -R 755 "$UPLOAD_DIR"
-chmod -R 755 "$MUSIC_DIR"
 
 # Create the 'submit' user for uploads
 echo "Creating submit user..."
 if ! id -u "$SUBMIT_USER" &>/dev/null; then
   useradd -m -s /bin/bash "$SUBMIT_USER"
 fi
+
+chown -R "$SUBMIT_USER:$SUBMIT_USER" "$UPLOAD_DIR"
+chmod -R 755 "$UPLOAD_DIR"
+chmod -R 755 "$MUSIC_DIR"
+
 mkdir -p "/home/$SUBMIT_USER/.ssh"
 touch "/home/$SUBMIT_USER/.ssh/authorized_keys"
 chown -R "$SUBMIT_USER:$SUBMIT_USER" "/home/$SUBMIT_USER/.ssh"
@@ -73,12 +75,12 @@ for file in "$UPLOAD_DIR"/*; do
   if [ -f "$file" ]; then
     extension=".${file##*.}"
     if echo "$SUPPORTED_FORMATS" | grep -q "$extension"; then
-      base_name="\$(basename "\$file" "\$extension")"
-      ffmpeg -y -i "\$file" -acodec "\$AUDIO_CODEC" -b:a "\$BITRATE" -ar "\$SAMPLE_RATE" "\$MUSIC_DIR/\$base_name.ogg" && rm -f "\$file"
-      echo "\$file converted and moved to \$MUSIC_DIR"
+      base_name="\$(basename "$file" "$extension")"
+      ffmpeg -y -i "$file" -acodec "$AUDIO_CODEC" -b:a "$BITRATE" -ar "$SAMPLE_RATE" "$MUSIC_DIR/$base_name.ogg" && rm -f "$file"
+      echo "$file converted and moved to $MUSIC_DIR"
     else
-      echo "\$file is not a supported format. Deleting..."
-      rm -f "\$file"
+      echo "$file is not a supported format. Deleting..."
+      rm -f "$file"
     fi
   fi
 done

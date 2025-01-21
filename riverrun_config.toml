@@ -8,6 +8,7 @@ ADMIN_PASSWORD_FILE = "/etc/secrets/admin_password"
 MUSIC_DIR = "/var/music"
 UPLOAD_DIR = "/home/submit/upload"
 M3U_FILE = "/home/submit/stream.m3u"
+LOG_FILE = "/var/log/riverrun.log"
 
 # Submit user settings
 SUBMIT_USER = "submit"

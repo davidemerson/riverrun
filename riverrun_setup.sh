@@ -151,10 +151,10 @@ echo "File detection completed at \$(date)" >> "\$LOG_FILE"
 EOF
 chmod +x "$CONVERTER_SCRIPT"
 
-# Schedule the converter script in cron
+# Clean existing crontab for the submit user and set up the new cron job
 echo "Scheduling converter script in cron..." | tee -a "$LOG_FILE"
-sudo crontab -u "$SUBMIT_USER" -l 2>/dev/null | {
-  cat
+sudo crontab -u "$SUBMIT_USER" -r 2>/dev/null || true
+{
   echo "* * * * * $CONVERTER_SCRIPT"
 } | sudo crontab -u "$SUBMIT_USER" -
 

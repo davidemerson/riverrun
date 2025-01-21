@@ -4,19 +4,29 @@ set -e
 
 # Load variables from the configuration file
 CONFIG_FILE="/etc/riverrun_config.toml"
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "Configuration file not found: $CONFIG_FILE"
-  exit 1
-fi
-
-# Source the configuration file
-source <(grep -v '^#' "$CONFIG_FILE" | sed 's/ = /=/g')
+REPO_CONFIG_FILE="riverrun/riverrun_config.toml"
 
 # Ensure the script runs as root
 if [ "$(id -u)" -ne 0 ]; then
   echo "This script must be run as root."
   exit 1
 fi
+
+# Check if the configuration file exists in /etc, and copy it from the repo if not
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "Configuration file not found at $CONFIG_FILE. Copying default configuration from the repository."
+  if [ -f "$REPO_CONFIG_FILE" ]; then
+    cp "$REPO_CONFIG_FILE" "$CONFIG_FILE"
+    echo "Default configuration copied to $CONFIG_FILE. Please edit it before proceeding."
+    exit 0
+  else
+    echo "Default configuration file not found in the repository at $REPO_CONFIG_FILE."
+    exit 1
+  fi
+fi
+
+# Source the configuration file
+source <(grep -v '^#' "$CONFIG_FILE" | sed 's/ = /=/g')
 
 # Install necessary packages
 echo "Installing necessary packages..."
@@ -91,7 +101,14 @@ chmod +x "$CONVERTER_SCRIPT"
 echo "Scheduling converter script in cron..."
 (crontab -l 2>/dev/null; echo "* * * * * $CONVERTER_SCRIPT") | crontab -
 
-# Final output
+# Generate an M3U playlist file
+echo "Generating M3U file..."
+STREAM_URL="http://$(hostname -I | awk '{print $1}'):8000/stream"
+mkdir -p "$(dirname "$M3U_FILE")"
+echo "$STREAM_URL" > "$M3U_FILE"
+chmod 644 "$M3U_FILE"
+
+echo "An M3U file has been created at $M3U_FILE. Share this file to allow users to connect to the stream."
 echo "Setup complete. Icecast is running, and the upload and conversion system is ready."
 echo "Upload files to $UPLOAD_DIR via SSH as the $SUBMIT_USER user."
 echo "Converted files will be available in $MUSIC_DIR."

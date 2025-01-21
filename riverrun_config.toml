@@ -7,6 +7,7 @@ ADMIN_PASSWORD_FILE = "/etc/secrets/admin_password"
 # Directory settings
 MUSIC_DIR = "/var/music"
 UPLOAD_DIR = "/home/submit/upload"
+M3U_FILE = "/home/submit/stream.m3u"
 
 # Submit user settings
 SUBMIT_USER = "submit"

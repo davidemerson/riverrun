@@ -28,6 +28,12 @@ fi
 # Source the configuration file
 source <(grep -v '^#' "$CONFIG_FILE" | sed 's/ = /=/g')
 
+# Check if M3U_FILE is defined
+if [ -z "$M3U_FILE" ]; then
+  echo "Error: M3U_FILE is not defined in the configuration file. Please define it and try again."
+  exit 1
+fi
+
 # Install necessary packages
 echo "Installing necessary packages..."
 apt update && apt install -y icecast2 ffmpeg

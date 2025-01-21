@@ -95,20 +95,31 @@ AUDIO_CODEC="$AUDIO_CODEC"
 LOG_FILE="$LOG_FILE"
 
 echo "Starting conversion at \$(date)" >> "$LOG_FILE"
+if [ ! -w "$MUSIC_DIR" ]; then
+  echo "Error: Cannot write to target directory \$MUSIC_DIR. Check permissions." >> "$LOG_FILE"
+  exit 1
+fi
+
 for file in "$UPLOAD_DIR"/*; do
   if [ -f "$file" ]; then
-    extension=".${file##*.}"
-    if echo "$SUPPORTED_FORMATS" | grep -q "$extension"; then
+    echo "Processing file: \$file" >> "$LOG_FILE"
+    if [ ! -r "$file" ]; then
+      echo "Error: Cannot read file \$file. Check permissions." >> "$LOG_FILE"
+      continue
+    fi
+
+    extension=".\${file##*.}"
+    if echo "$SUPPORTED_FORMATS" | grep -q "\$extension"; then
       uuid="\$(cat /proc/sys/kernel/random/uuid)"
-      target_file="$MUSIC_DIR/\$uuid.ogg"
+      target_file="\$MUSIC_DIR/\$uuid.ogg"
       if ffmpeg -y -i "$file" -acodec "$AUDIO_CODEC" -b:a "$BITRATE" -ar "$SAMPLE_RATE" "$target_file" >> "$LOG_FILE" 2>&1; then
         rm -f "$file"
-        echo "$file converted and moved to \$target_file" >> "$LOG_FILE"
+        echo "Successfully converted \$file to \$target_file" >> "$LOG_FILE"
       else
-        echo "Failed to convert $file" >> "$LOG_FILE"
+        echo "Error: Failed to convert \$file" >> "$LOG_FILE"
       fi
     else
-      echo "$file is not a supported format. Deleting..." >> "$LOG_FILE"
+      echo "Unsupported file format for \$file. Deleting..." >> "$LOG_FILE"
       rm -f "$file"
     fi
   fi

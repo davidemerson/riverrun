@@ -99,10 +99,11 @@ for file in "$UPLOAD_DIR"/*; do
   if [ -f "$file" ]; then
     extension=".${file##*.}"
     if echo "$SUPPORTED_FORMATS" | grep -q "$extension"; then
-      base_name="\$(basename "$file" "$extension")"
-      if ffmpeg -y -i "$file" -acodec "$AUDIO_CODEC" -b:a "$BITRATE" -ar "$SAMPLE_RATE" "$MUSIC_DIR/$base_name.ogg" >> "$LOG_FILE" 2>&1; then
+      uuid="\$(cat /proc/sys/kernel/random/uuid)"
+      target_file="$MUSIC_DIR/\$uuid.ogg"
+      if ffmpeg -y -i "$file" -acodec "$AUDIO_CODEC" -b:a "$BITRATE" -ar "$SAMPLE_RATE" "$target_file" >> "$LOG_FILE" 2>&1; then
         rm -f "$file"
-        echo "$file converted and moved to $MUSIC_DIR" >> "$LOG_FILE"
+        echo "$file converted and moved to \$target_file" >> "$LOG_FILE"
       else
         echo "Failed to convert $file" >> "$LOG_FILE"
       fi

@@ -28,11 +28,14 @@ fi
 # Source the configuration file
 source <(grep -v '^#' "$CONFIG_FILE" | sed 's/ = /=/g')
 
-# Check if M3U_FILE is defined
-if [ -z "$M3U_FILE" ]; then
-  echo "Error: M3U_FILE is not defined in the configuration file. Please define it and try again."
-  exit 1
-fi
+# Validate required variables
+REQUIRED_VARS=("ICECAST_CONF" "SOURCE_PASSWORD_FILE" "RELAY_PASSWORD_FILE" "ADMIN_PASSWORD_FILE" "MUSIC_DIR" "UPLOAD_DIR" "M3U_FILE" "SUBMIT_USER" "SUPPORTED_FORMATS" "BITRATE" "SAMPLE_RATE" "AUDIO_CODEC" "CONVERTER_SCRIPT")
+for var in "${REQUIRED_VARS[@]}"; do
+  if [ -z "${!var}" ]; then
+    echo "Error: Required variable $var is not defined in the configuration file. Please update $CONFIG_FILE and try again."
+    exit 1
+  fi
+done
 
 # Install necessary packages
 echo "Installing necessary packages..."

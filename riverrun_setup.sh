@@ -3,7 +3,7 @@
 set -e
 
 # Load variables from the configuration file
-CONFIG_FILE="/etc/internet_radio_config.toml"
+CONFIG_FILE="/etc/riverrun_config.toml"
 if [ ! -f "$CONFIG_FILE" ]; then
   echo "Configuration file not found: $CONFIG_FILE"
   exit 1

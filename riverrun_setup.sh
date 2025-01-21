@@ -103,6 +103,15 @@ BITRATE="$BITRATE"
 SAMPLE_RATE="$SAMPLE_RATE"
 AUDIO_CODEC="$AUDIO_CODEC"
 LOG_FILE="$LOG_FILE"
+LOCK_FILE="/tmp/riverrun_converter.lock"
+
+if [ -f "\$LOCK_FILE" ]; then
+  echo "Script already running. Exiting." >> "\$LOG_FILE"
+  exit 1
+fi
+
+trap 'rm -f "\$LOCK_FILE"' EXIT
+touch "\$LOCK_FILE"
 
 echo "Starting file detection in \$UPLOAD_DIR at \$(date)" >> "\$LOG_FILE"
 if [ ! -w "\$MUSIC_DIR" ]; then

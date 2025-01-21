@@ -32,7 +32,7 @@ fi
 source <(grep -v '^#' "$CONFIG_FILE" | sed 's/ = /=/g')
 
 # Validate required variables
-REQUIRED_VARS=("ICECAST_CONF" "SOURCE_PASSWORD_FILE" "RELAY_PASSWORD_FILE" "ADMIN_PASSWORD_FILE" "MUSIC_DIR" "UPLOAD_DIR" "M3U_FILE" "SUBMIT_USER" "SUPPORTED_FORMATS" "BITRATE" "SAMPLE_RATE" "AUDIO_CODEC" "CONVERTER_SCRIPT" "LOG_FILE")
+REQUIRED_VARS=("ICECAST_CONF" "SOURCE_PASSWORD_FILE" "RELAY_PASSWORD_FILE" "ADMIN_PASSWORD_FILE" "MUSIC_DIR" "UPLOAD_DIR" "M3U_FILE" "SUBMIT_USER" "SUPPORTED_FORMATS" "BITRATE" "SAMPLE_RATE" "AUDIO_CODEC" "CONVERTER_SCRIPT" "LOG_FILE" "ICECAST_LOCATION" "ICECAST_ADMIN_EMAIL" "ICECAST_MAX_CLIENTS" "ICECAST_MAX_SOURCES" "ICECAST_HOSTNAME")
 for var in "${REQUIRED_VARS[@]}"; do
   if [ -z "${!var}" ]; then
     echo "Error: Required variable $var is not defined in the configuration file. Please update $CONFIG_FILE and try again." | tee -a "$LOG_FILE"
@@ -55,9 +55,15 @@ source_password=$(cat "$SOURCE_PASSWORD_FILE")
 relay_password=$(cat "$RELAY_PASSWORD_FILE")
 admin_password=$(cat "$ADMIN_PASSWORD_FILE")
 
-sed -i "s/<source-password>hackme<\/source-password>/<source-password>$source_password<\/source-password>/g" "$ICECAST_CONF"
-sed -i "s/<relay-password>hackme<\/relay-password>/<relay-password>$relay_password<\/relay-password>/g" "$ICECAST_CONF"
-sed -i "s/<admin-password>hackme<\/admin-password>/<admin-password>$admin_password<\/admin-password>/g" "$ICECAST_CONF"
+sed -i "s|<location>.*</location>|<location>$ICECAST_LOCATION</location>|g" "$ICECAST_CONF"
+sed -i "s|<admin>.*</admin>|<admin>$ICECAST_ADMIN_EMAIL</admin>|g" "$ICECAST_CONF"
+sed -i "s|<clients>.*</clients>|<clients>$ICECAST_MAX_CLIENTS</clients>|g" "$ICECAST_CONF"
+sed -i "s|<sources>.*</sources>|<sources>$ICECAST_MAX_SOURCES</sources>|g" "$ICECAST_CONF"
+sed -i "s|<source-password>.*</source-password>|<source-password>$source_password</source-password>|g" "$ICECAST_CONF"
+sed -i "s|<relay-password>.*</relay-password>|<relay-password>$relay_password</relay-password>|g" "$ICECAST_CONF"
+sed -i "s|<admin-password>.*</admin-password>|<admin-password>$admin_password</admin-password>|g" "$ICECAST_CONF"
+sed -i "s|<hostname>.*</hostname>|<hostname>$ICECAST_HOSTNAME</hostname>|g" "$ICECAST_CONF"
+
 systemctl restart icecast2 | tee -a "$LOG_FILE"
 
 # Create directories

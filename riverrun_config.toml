@@ -3,6 +3,11 @@ ICECAST_CONF = "/etc/icecast2/icecast.xml"
 SOURCE_PASSWORD_FILE = "/etc/secrets/source_password"
 RELAY_PASSWORD_FILE = "/etc/secrets/relay_password"
 ADMIN_PASSWORD_FILE = "/etc/secrets/admin_password"
+ICECAST_LOCATION = "merveilles.town"
+ICECAST_ADMIN_EMAIL = "riverrun@nnix.com"
+ICECAST_MAX_CLIENTS = 100
+ICECAST_MAX_SOURCES = 2
+ICECAST_HOSTNAME = "riverrun.nnix.com"
 
 # Directory settings
 MUSIC_DIR = "/var/music"

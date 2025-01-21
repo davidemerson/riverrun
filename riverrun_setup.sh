@@ -2,6 +2,9 @@
 
 set -e
 
+# Initialize LOG_FILE with a default value
+LOG_FILE="/var/log/riverrun_setup.log"
+
 # Load variables from the configuration file
 CONFIG_FILE="/etc/riverrun_config.toml"
 REPO_CONFIG_FILE="riverrun/riverrun_config.toml"

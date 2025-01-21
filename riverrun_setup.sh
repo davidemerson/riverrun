@@ -104,46 +104,50 @@ SAMPLE_RATE="$SAMPLE_RATE"
 AUDIO_CODEC="$AUDIO_CODEC"
 LOG_FILE="$LOG_FILE"
 
-echo "Starting conversion at \$(date)" >> "$LOG_FILE"
-if [ ! -w "$MUSIC_DIR" ]; then
-  echo "Error: Cannot write to target directory \$MUSIC_DIR. Check permissions." >> "$LOG_FILE"
+echo "Starting file detection in \$UPLOAD_DIR at \$(date)" >> "\$LOG_FILE"
+if [ ! -w "\$MUSIC_DIR" ]; then
+  echo "Error: Cannot write to target directory \$MUSIC_DIR. Check permissions." >> "\$LOG_FILE"
   exit 1
 fi
 
 files_found=0
-for file in "$UPLOAD_DIR"/*; do
-  if [ -f "$file" ]; then
+for file in "\$UPLOAD_DIR"/*; do
+  echo "Checking file: \$file" >> "\$LOG_FILE"
+  if [ -f "\$file" ]; then
     files_found=1
-    echo "Processing file: \$file" >> "$LOG_FILE"
-    if [ ! -r "$file" ]; then
-      echo "Error: Cannot read file \$file. Check permissions." >> "$LOG_FILE"
+    echo "Processing file: \$file" >> "\$LOG_FILE"
+    if [ ! -r "\$file" ]; then
+      echo "Error: Cannot read file \$file. Check permissions." >> "\$LOG_FILE"
       continue
     fi
 
     extension=".\${file##*.}"
-    if echo "$SUPPORTED_FORMATS" | grep -q "\$extension"; then
+    echo "Detected extension: \$extension for \$file" >> "\$LOG_FILE"
+    if echo "\$SUPPORTED_FORMATS" | grep -q "\$extension"; then
       uuid="\$(cat /proc/sys/kernel/random/uuid)"
       target_file="\$MUSIC_DIR/\$uuid.ogg"
-      echo "Converting \$file to \$target_file with ffmpeg..." >> "$LOG_FILE"
-      if ffmpeg -y -i "\$file" -acodec "\$AUDIO_CODEC" -b:a "\$BITRATE" -ar "\$SAMPLE_RATE" "\$target_file" >> "$LOG_FILE" 2>&1; then
+      echo "Converting \$file to \$target_file with ffmpeg..." >> "\$LOG_FILE"
+      if ffmpeg -y -i "\$file" -acodec "\$AUDIO_CODEC" -b:a "\$BITRATE" -ar "\$SAMPLE_RATE" "\$target_file" >> "\$LOG_FILE" 2>&1; then
         rm -f "\$file"
-        echo "Successfully converted \$file to \$target_file" >> "$LOG_FILE"
+        echo "Successfully converted \$file to \$target_file" >> "\$LOG_FILE"
       else
-        echo "Error: Failed to convert \$file" >> "$LOG_FILE"
+        echo "Error: Failed to convert \$file" >> "\$LOG_FILE"
       fi
     else
-      echo "Unsupported file format for \$file. Deleting..." >> "$LOG_FILE"
+      echo "Unsupported file format for \$file. Deleting..." >> "\$LOG_FILE"
       rm -f "\$file"
     fi
+  else
+    echo "Skipping non-file or missing file: \$file" >> "\$LOG_FILE"
   fi
 
 done
 
 if [ \$files_found -eq 0 ]; then
-  echo "No files found in \$UPLOAD_DIR to process." >> "$LOG_FILE"
+  echo "No files found in \$UPLOAD_DIR to process." >> "\$LOG_FILE"
 fi
 
-echo "Conversion process completed at \$(date)" >> "$LOG_FILE"
+echo "File detection completed at \$(date)" >> "\$LOG_FILE"
 EOF
 chmod +x "$CONVERTER_SCRIPT"
 

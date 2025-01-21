@@ -73,7 +73,17 @@ fi
 
 chown -R "$SUBMIT_USER:$SUBMIT_USER" "$UPLOAD_DIR"
 chmod -R 755 "$UPLOAD_DIR"
-chmod -R 755 "$MUSIC_DIR"
+
+# Ensure /var/music has the correct permissions
+if [ ! -w "$MUSIC_DIR" ]; then
+  echo "Error: Cannot write to target directory $MUSIC_DIR. Attempting to fix permissions..." | tee -a "$LOG_FILE"
+  sudo chown -R "$SUBMIT_USER:$SUBMIT_USER" "$MUSIC_DIR"
+  sudo chmod -R 755 "$MUSIC_DIR"
+  if [ ! -w "$MUSIC_DIR" ]; then
+    echo "Error: Still cannot write to $MUSIC_DIR after attempting to fix permissions." | tee -a "$LOG_FILE"
+    exit 1
+  fi
+fi
 
 mkdir -p "/home/$SUBMIT_USER/.ssh"
 touch "/home/$SUBMIT_USER/.ssh/authorized_keys"
@@ -100,8 +110,10 @@ if [ ! -w "$MUSIC_DIR" ]; then
   exit 1
 fi
 
+files_found=0
 for file in "$UPLOAD_DIR"/*; do
   if [ -f "$file" ]; then
+    files_found=1
     echo "Processing file: \$file" >> "$LOG_FILE"
     if [ ! -r "$file" ]; then
       echo "Error: Cannot read file \$file. Check permissions." >> "$LOG_FILE"
@@ -112,26 +124,35 @@ for file in "$UPLOAD_DIR"/*; do
     if echo "$SUPPORTED_FORMATS" | grep -q "\$extension"; then
       uuid="\$(cat /proc/sys/kernel/random/uuid)"
       target_file="\$MUSIC_DIR/\$uuid.ogg"
-      if ffmpeg -y -i "$file" -acodec "$AUDIO_CODEC" -b:a "$BITRATE" -ar "$SAMPLE_RATE" "$target_file" >> "$LOG_FILE" 2>&1; then
-        rm -f "$file"
+      echo "Converting \$file to \$target_file with ffmpeg..." >> "$LOG_FILE"
+      if ffmpeg -y -i "\$file" -acodec "\$AUDIO_CODEC" -b:a "\$BITRATE" -ar "\$SAMPLE_RATE" "\$target_file" >> "$LOG_FILE" 2>&1; then
+        rm -f "\$file"
         echo "Successfully converted \$file to \$target_file" >> "$LOG_FILE"
       else
         echo "Error: Failed to convert \$file" >> "$LOG_FILE"
       fi
     else
       echo "Unsupported file format for \$file. Deleting..." >> "$LOG_FILE"
-      rm -f "$file"
+      rm -f "\$file"
     fi
   fi
 
 done
+
+if [ \$files_found -eq 0 ]; then
+  echo "No files found in \$UPLOAD_DIR to process." >> "$LOG_FILE"
+fi
+
 echo "Conversion process completed at \$(date)" >> "$LOG_FILE"
 EOF
 chmod +x "$CONVERTER_SCRIPT"
 
 # Schedule the converter script in cron
 echo "Scheduling converter script in cron..." | tee -a "$LOG_FILE"
-(crontab -l 2>/dev/null; echo "* * * * * $CONVERTER_SCRIPT") | crontab -
+sudo crontab -u "$SUBMIT_USER" -l 2>/dev/null | {
+  cat
+  echo "* * * * * $CONVERTER_SCRIPT"
+} | sudo crontab -u "$SUBMIT_USER" -
 
 # Generate an M3U playlist file
 echo "Generating M3U file..." | tee -a "$LOG_FILE"
